@@ -1,0 +1,58 @@
+version: '3'
+services:
+    elasticsearch_node1:
+        image: elasticsearch:2.4
+        container_name: elasticsearch_node1
+        restart: always
+        command: "elasticsearch -Des.bootstrap.memory_lock=true -Des.node.name=elasticsearch_node1 -Des.cluster.name=docker-cluster -Des.discovery.zen.ping.unicast.hosts=elasticsearch_node1,elasticsearch_node2,elasticsearch_node3"
+        environment:
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - TZ=Asia/Taipei
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./data/node1:/usr/share/elasticsearch/data
+
+    elasticsearch_node2:
+        image: elasticsearch:2.4
+        container_name: elasticsearch_node2
+        restart: always
+        command: "elasticsearch -Des.bootstrap.memory_lock=true -Des.node.name=elasticsearch_node2 -Des.cluster.name=docker-cluster -Des.discovery.zen.ping.unicast.hosts=elasticsearch_node1,elasticsearch_node2,elasticsearch_node3"
+        environment:
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - TZ=Asia/Taipei
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./data/node2:/usr/share/elasticsearch/data
+        depends_on:
+            - elasticsearch_node1
+
+    elasticsearch_node3:
+        image: elasticsearch:2.4
+        container_name: elasticsearch_node3
+        restart: always
+        command: "elasticsearch -Des.bootstrap.memory_lock=true -Des.node.name=elasticsearch_node3 -Des.cluster.name=docker-cluster -Des.discovery.zen.ping.unicast.hosts=elasticsearch_node1,elasticsearch_node2,elasticsearch_node3"
+        environment:
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+            - TZ=Asia/Taipei
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./data/node3:/usr/share/elasticsearch/data
+        depends_on:
+            - elasticsearch_node2
+
+    cerebro_interface:
+        image: lmenezes/cerebro:0.8.1
+        container_name: cerebro_interface
+        ports:
+            - 37212:9000
+        depends_on:
+            - elasticsearch_node3
